@@ -1,0 +1,112 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+       <a href="/DemoAJAX/Create">新增</a>
+        <table border="1" width="100%" class="tabel table-hover table-bordered">
+            <thead>
+                <tr>
+                    <td>编号</td>
+                    <td>姓名</td>
+                    <td>年龄</td>
+                    <td>部门</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody id="tb1">
+            </tbody>
+        </table>
+        <input type="button" class="btn btn-success" id="btnFirst" value="首页" />
+        <input type="button" class="btn btn-success" id="btnBack" value="上一页" />
+        <input type="button" class="btn btn-success" id="btnNext" value="下一页" />
+        <input type="button" class="btn btn-success" id="btnLast" value="尾页" />
+    </div>
+</body>
+</html>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    var pageIndex = 1;
+    var pageSize = 5;
+    var pageCount = 0;
+    $(function () {
+
+        PageList();
+
+        $("#btnFirst").click(function () {
+            pageIndex = 1;
+            PageList();
+        });
+        $("#btnBack").click(function () {
+            pageIndex--;
+            PageList();
+        });
+        $("#btnNext").click(function () {
+            pageIndex++;
+            PageList();
+        });
+        $("#btnLast").click(function () {
+            pageIndex = pageCount;
+            PageList();
+        });
+    });
+    function Del(id) {
+        if (confirm('确定删除?')) {
+
+            $.ajax({
+                type: "POST",
+                url: "/DemoAJAX/Del",
+                data: "{id:" + id + "}",
+                dataType: "json",
+                contentType: "application/json",
+                success: function (result) {
+                    if (result > 0) {
+                        alert("删除成功！");
+                        PageList();
+                    }
+                    else {
+                        alert("删除失败！");
+                    }
+                },
+                error: function (ex) {
+                    alert(ex.responseText);
+                }
+            });
+        }
+        return false;
+    }
+    function PageList() {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/PageListDemo",
+            data: "{pageIndex:" + pageIndex + ",pageSize:" + pageSize + "}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                //获取总页数
+                pageCount = result.PageCount;
+                //console.log(result);
+                $("#tb1 tr").remove();
+                $.each(result.DataList, function (index, data) {
+                    $("#tb1").append("<tr><td>" + data.sid + "</td><td>" + data.name + "</td><td>" + data.age + "</td><td>" + data.dName + "</td><td><a href='#' class='btn btn-warning' onclick='return Del(" + data.sid + ")'>删除</a><a href='/DemoAJAX/Update?id=" + data.sid + "' class='btn btn-warning'>修改</a></td></tr>");
+                });
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+</script>
+
+
